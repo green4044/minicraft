@@ -1,0 +1,78 @@
+import random
+import os
+import time
+
+# Game Settings
+WIDTH = 30
+PLAYER = "P"
+TREE = "T"
+ROCK = "R"
+ZOMBIE = "Z"
+EMPTY = "."
+HOUSE = "H"
+
+class MiniCraft:
+    def __init__(self):
+        self.world = [EMPTY] * WIDTH
+        self.pos = WIDTH // 2
+        self.inventory = {"Wood": 0, "Stone": 0}
+        self.house_built = False
+        self.zombie_pos = 0
+        self.running = True
+        
+        # Seed the world
+        for _ in range(5):
+            self.world[random.randint(0, WIDTH-1)] = TREE
+            self.world[random.randint(0, WIDTH-1)] = ROCK
+
+    def draw(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        display = list(self.world)
+        display[self.zombie_pos] = ZOMBIE
+        display[self.pos] = PLAYER
+        
+        print("--- MINI CRAFT (1D) ---")
+        print("".join(display))
+        print(f"Inventory: {self.inventory} | Goal: 5 Wood, 5 Stone for a House")
+        if self.house_built:
+            print("YOU WIN! You built a 1D sanctuary.")
+            self.running = False
+
+    def move_zombie(self):
+        if self.zombie_pos < self.pos:
+            self.zombie_pos += 1
+        elif self.zombie_pos > self.pos:
+            self.zombie_pos -= 1
+        
+        if self.zombie_pos == self.pos:
+            print("\nGAME OVER: A zombie got you in the 1st dimension.")
+            self.running = False
+
+    def play(self):
+        while self.running:
+            self.draw()
+            if not self.running: break
+            
+            action = input("Move (a/d) or Mine/Build (s): ").lower()
+            
+            if action == 'a' and self.pos > 0:
+                self.pos -= 1
+            elif action == 'd' and self.pos < WIDTH - 1:
+                self.pos += 1
+            elif action == 's':
+                item = self.world[self.pos]
+                if item == TREE:
+                    self.inventory["Wood"] += 1
+                    self.world[self.pos] = EMPTY
+                elif item == ROCK:
+                    self.inventory["Stone"] += 1
+                    self.world[self.pos] = EMPTY
+                elif self.inventory["Wood"] >= 5 and self.inventory["Stone"] >= 5:
+                    self.world[self.pos] = HOUSE
+                    self.house_built = True
+            
+            self.move_zombie()
+
+if __name__ == "__main__":
+    game = MiniCraft()
+    game.play()
